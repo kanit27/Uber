@@ -33,18 +33,19 @@ const userSchema = new mongoose.Schema({
     },
 });
 
-userSchema.methods.generateAuthToken = function(){
-    const token = jwt.sign({_id: this._id}, process.env.JWT_SECRET);
-    return token;
-};
+userSchema.methods.generateAuthToken = function () {
+    return jwt.sign({ _id: this._id, email: this.email }, process.env.JWT_SECRET);
+  };
 
 userSchema.methods.comparePassword = async function(enteredPassword){
     return await bcrypt.compare(enteredPassword, this.password);
-}
+};
 
-userSchema.statics.hassPassword = async function(password){
-    return await bcrypt.hash(password, 10);
-}
+userSchema.pre("save", async function (next) {
+    if (!this.isModified("password")) return next();
+    this.password = await bcrypt.hash(this.password, 10);
+    next();
+  });
 
 const userModel = mongoose.model('user', userSchema);
 
