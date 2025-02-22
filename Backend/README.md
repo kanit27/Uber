@@ -1,4 +1,4 @@
-🚀 User Registration Process
+#🚀 User Registration Process
 
 ## 📌 Overview
 This document provides a detailed guide on the **User Registration Process**, covering:
