@@ -1,4 +1,4 @@
-const userModel = require('../models/user-model');
+const userModel = require('../models/user.model');
 
 
 exports.createUser = async ({firstname, lastname, email, password}) => {
@@ -16,3 +16,4 @@ exports.createUser = async ({firstname, lastname, email, password}) => {
     await user.save();
     return user;
 };
+
