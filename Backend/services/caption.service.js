@@ -13,10 +13,11 @@ exports.createCaption = async ({firstname, lastname, email, password, color, pla
         password,
         vehicle:{
             color,
-            plate,
+            plate,  
             capacity,
             vehicleType
         }
     });
+    await captionService.save();
     return captionService;
 };
