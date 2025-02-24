@@ -16,11 +16,15 @@ app.use(express.urlencoded({ extended: true }));
 const cookieParser = require("cookie-parser");
 app.use(cookieParser());
 
-
+const path = require("path");
+app.use(express.static(path.join(__dirname, "public")));
 
 const userRoutes = require("./routes/user.routes");
+const captionRoutes = require("./routes/caption.routes");
 
 app.use("/users", userRoutes);
+
+app.use("/caption", captionRoutes);
 
 app.get("/", (req, res) => {
   res.send("Hello World");
