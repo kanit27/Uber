@@ -1,3 +1,4 @@
+import Header from "../components/Header";
 import Maps from "../components/Maps";
 import WhereTo from "../components/WhereTo";
 import { useState } from "react";
