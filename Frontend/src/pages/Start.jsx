@@ -11,7 +11,7 @@ import { MdFastfood } from "react-icons/md";
 import { Link } from 'react-router-dom';
 import { SiUber } from 'react-icons/si';
 
-const Home = () => {
+const Start = () => {
 
   return (
     <div className="relative h-screen w-screen bg-black">
@@ -53,4 +53,4 @@ const Home = () => {
     );
   };
 
-export default Home;
+export default Start;

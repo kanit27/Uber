@@ -1,11 +1,11 @@
-import React from 'react'
-import { MdAccountCircle } from 'react-icons/md';
+import { SiUber } from "react-icons/si";
+import { IoIosSettings   } from 'react-icons/io';
 
 const Header = () => {
   return (
-    <div className="absolute top-6 right-6 text-white text-[40px] z-10 font-bold">
-      <MdAccountCircle />
-
+    <div className="w-full h-16 flex items-center justify-between px-4">
+      <SiUber className="w-20 h-14" />
+      <IoIosSettings  className="w-8 h-8 rounded-full bg-black text-white p-1" />
     </div>
   );
 }

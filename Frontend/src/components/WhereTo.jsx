@@ -1,22 +1,22 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { MdOutlineEmergencyShare, MdSearch, MdStarRate } from "react-icons/md";
 import { useGSAP } from "@gsap/react";
-import { RiArrowDownWideLine, RiProfileFill, RiUserFill } from "react-icons/ri";
+import { RiArrowDownWideLine } from "react-icons/ri";
 import { GrLocationPin } from "react-icons/gr";
 import gsap from "gsap";
-import { CgProfile } from "react-icons/cg";
 import { AiOutlineSafety } from "react-icons/ai";
-import SuggestionList from "../components/SuggestionList";
 import LocationSearch from "../components/LocationSearch";
 import RidesList from "../components/RidesList";
 import { TiMessage } from "react-icons/ti";
 import { HiLocationMarker } from "react-icons/hi";
 import { IoCallOutline, IoWallet } from "react-icons/io5";
 
-const WhereTo = () => {
+const WhereTo = ({ setRouteCoords }) => {
   const [panelOpen, setPanelOpen] = useState(false);
   const [locationOpen, setLocationOpen] = useState(false);
   const [ridesOpen, setRidesOpen] = useState(false);
+  const [currentCoords, setCurrentCoords] = useState(null);
+  const [destinationCoords, setDestinationCoords] = useState(null);
   const panelRef = useRef(null);
   const panelCloseRef = useRef(null);
   const locationRef = useRef(null);
@@ -115,10 +115,36 @@ const WhereTo = () => {
     [ridesOpen]
   );
 
+  useEffect(() => {
+    const fetchRoute = async () => {
+      if (!currentCoords || !destinationCoords) return;
+
+      const url = `https://router.project-osrm.org/route/v1/driving/${currentCoords.lng},${currentCoords.lat};${destinationCoords.lng},${destinationCoords.lat}?overview=full&geometries=geojson`;
+
+      try {
+        const res = await fetch(url);
+        const data = await res.json();
+        console.log("OSRM Route Data:", data);
+
+        if (data.routes && data.routes.length > 0) {
+          const coords = data.routes[0].geometry.coordinates.map((coord) => [
+            coord[1],
+            coord[0],
+          ]);
+          setRouteCoords(coords);
+        }
+      } catch (err) {
+        console.error("Error fetching route from OSRM:", err);
+      }
+    };
+
+    fetchRoute();
+  }, [currentCoords, destinationCoords]);
+
   return (
     <>
-      <div className="w-full flex flex-col h-full">
-        <div className="w-full flex justify-center items-end pb-8 absolute bottom-0 right-0 ">
+      <div className="w-full flex flex-col z-[9999]">
+        <div className="w-full absolute bottom-0 left-0 flex justify-center  items-center pb-8 z-[9999]">
           <div
             onClick={() => setPanelOpen(true)}
             className="bg-neutral-50 rounded-full pl-5 w-96 h-14 flex justify-start gap-2 items-center cursor-pointer"
@@ -129,10 +155,10 @@ const WhereTo = () => {
             </button>
           </div>
         </div>
-        <div className="relative ">
-          {/* <div
+        <div className="relative z-[9999]">
+          <div
             ref={panelRef}
-            className=" w-full h-[70vh] py-4 rounded-2xl bg-white "
+            className="z-[9999] w-full h-[100vh] py-4 bg-white "
           >
             <div className="w-full px-6 flex justify-between items-center">
               <h1 className="text-black font-semibold text-[25px] truncate">
@@ -146,16 +172,15 @@ const WhereTo = () => {
                 <RiArrowDownWideLine className="text-3xl" />
               </div>
             </div>
-            <LocationSearch />
-            <div className="flex h-[50vh] w-full flex-wrap overflow-y-auto">
-              <div className="w-full  flex flex-col items-start justify-start  border-t-[1px] border-neutral-300 cursor-pointer">
-                <SuggestionList
-                  setPanelOpen={setPanelOpen}
-                  setLocationOpen={setLocationOpen}
-                />
-              </div>
-            </div>
-          </div> */}
+            <LocationSearch
+              currentCoords={currentCoords}
+              destinationCoords={destinationCoords}
+              setCurrentCoords={setCurrentCoords}
+              setDestinationCoords={setDestinationCoords}
+              setLocationOpen={setLocationOpen}
+              setPanelOpen={setPanelOpen}
+            />
+          </div>
           <div
             ref={locationRef}
             className="w-full h-[70vh] absolute top-0 left-0 py-6 rounded-2xl bg-white"
@@ -172,13 +197,17 @@ const WhereTo = () => {
                 <RiArrowDownWideLine className="text-3xl" />
               </div>
             </div>
-            <div className="w-full h-[52vh] mt-4  px-2  overflow-y-auto">
+            <div className="w-full h-[52vh] mt-4  px-2 overflow-y-auto">
               <RidesList />
             </div>
             <button
               ref={ridesCloseRef}
-              onClick={() => setRidesOpen(true)}
-              className="bg-black text-white w-full h-14 rounded-2xl mt-4"
+              onClick={() => {
+                setLocationOpen(false);
+                setPanelOpen(false);
+                setRidesOpen(true);
+              }}
+              className="bg-black text-white w-full h-14 rounded-2xl mt-6"
             >
               <h1 className="text-xl -tracking-tight font-semibold ">
                 Confirm Ride
@@ -240,19 +269,18 @@ const WhereTo = () => {
                     </div>
                   </div>
                 </div>
-                {/* <div className="w-full flex flex-row gap-3 px-2 py-4 mt-2 ">
+                <div className="w-full flex flex-row gap-3 px-2 py-4 mt-2 ">
                   <div className="rounded-full w-12 h-12 mt-1 flex  items-center justify-center ">
                     <IoWallet className="p-2 w-12 h-12 text-3xl text-black" />
                   </div>
                   <div className="flex flex-col ">
                     <h1 className="text-2xl font-semibold pt-3">₹ 193.20</h1>
                   </div>
-                </div> */}
+                </div>
               </div>
             </div>
           </div>
-          <div
-            ref={panelRef}
+          <div // ref={panelRef}
             className="w-full h-[40vh] py-4 rounded-2xl bg-white "
           >
             <div className="w-full px-6 flex justify-between items-center">

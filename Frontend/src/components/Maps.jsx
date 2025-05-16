@@ -1,21 +1,104 @@
-import React from 'react'
-import UberImage from '../assets/UberImage.png'
+import React, { useEffect } from "react";
+import {
+  MapContainer,
+  TileLayer,
+  Marker,
+  Polyline,
+  useMap,
+} from "react-leaflet";
+import "leaflet/dist/leaflet.css";
 
-const Maps = () => {
+const Maps = ({ routeCoords }) => {
+  const [position, setPosition] = React.useState(null);
 
+  console.log("Route Coords in Maps.jsx:", routeCoords);
+
+  const FitMapToRoute = ({ routeCoords }) => {
+    const map = useMap();
+
+    useEffect(() => {
+      if (routeCoords && routeCoords.length > 0) {
+        map.fitBounds(routeCoords, {
+          paddingBottomRight: [0, 500],
+        });
+      }
+    }, [routeCoords, map]);
+
+    return null;
+  };
+
+  React.useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (location) => {
+          const { latitude, longitude } = location.coords;
+          setPosition([latitude, longitude]);
+        },
+        (error) => {
+          console.error("Error fetching location:", error);
+        }
+      );
+    } else {
+      console.error("Geolocation is not supported by this browser.");
+    }
+  }, []);
+
+  if (!position) {
     return (
-      
-        <div className='relative w-full h-full'>
-            <div className="w-full h-full absolute top-0 left-0 ">
-          <img
-            className="w-full h-full object-cover"
-            src="https://i.pinimg.com/736x/49/3b/07/493b075906512de0d7742a162438e15e.jpg"
-            alt="Uber Map"
-          />
-        </div>
-        </div>
-    
+      <div
+        style={{
+          height: "100vh",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <div
+          className="loader"
+          style={{
+            width: "50px",
+            height: "50px",
+            border: "5px solid #f3f3f3",
+            borderTop: "5px solid #3498db",
+            borderRadius: "50%",
+            animation: "spin 1s linear infinite",
+          }}
+        ></div>
+        <style>
+          {`
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+        `}
+        </style>
+      </div>
     );
-}
+  }
 
-export default Maps
+  return (
+    <div className="w-full h-full flex justify-center items-center">
+          <MapContainer
+    className="w-full h-full"
+      center={position}
+      zoom={16}
+    >
+      <TileLayer
+        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+      />
+      <Marker position={position} />
+
+      {routeCoords.length > 0 && (
+        <>
+          <Polyline positions={routeCoords} color="black" />
+          <FitMapToRoute routeCoords={routeCoords} />
+        </>
+      )}
+    </MapContainer>
+    
+    </div>
+  );
+};
+
+export default Maps;
