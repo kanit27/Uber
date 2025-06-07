@@ -6,44 +6,39 @@ import {
   Polyline,
   useMap,
 } from "react-leaflet";
+import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
-const Maps = ({ routeCoords }) => {
-  const [position, setPosition] = React.useState(null);
+// Rider Icon 🧍
+const riderIcon = new L.DivIcon({
+  className: "",
+  html: "🧍",
+  iconSize: [24, 24],
+  iconAnchor: [12, 24],
+});
 
-  console.log("Route Coords in Maps.jsx:", routeCoords);
+// Driver Icon 🚗
+const driverIcon = new L.DivIcon({
+  className: "",
+  html: "🚗",
+  iconSize: [24, 24],
+  iconAnchor: [12, 24],
+});
 
-  const FitMapToRoute = ({ routeCoords }) => {
-    const map = useMap();
-
-    useEffect(() => {
-      if (routeCoords && routeCoords.length > 0) {
-        map.fitBounds(routeCoords, {
-          paddingBottomRight: [0, 500],
-        });
-      }
-    }, [routeCoords, map]);
-
-    return null;
-  };
-
-  React.useEffect(() => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (location) => {
-          const { latitude, longitude } = location.coords;
-          setPosition([latitude, longitude]);
-        },
-        (error) => {
-          console.error("Error fetching location:", error);
-        }
-      );
-    } else {
-      console.error("Geolocation is not supported by this browser.");
+const FitMapToRoute = ({ routeCoords }) => {
+  const map = useMap();
+  useEffect(() => {
+    if (routeCoords && routeCoords.length > 0) {
+      map.fitBounds(routeCoords, {
+        paddingBottomRight: [0, 500],
+      });
     }
-  }, []);
+  }, [routeCoords, map]);
+  return null;
+};
 
-  if (!position) {
+const Maps = ({ selfLocation, otherMarkers = [], routeCoords = [], isRider = false }) => {
+  if (!selfLocation) {
     return (
       <div
         style={{
@@ -66,11 +61,11 @@ const Maps = ({ routeCoords }) => {
         ></div>
         <style>
           {`
-        @keyframes spin {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
-        }
-        `}
+            @keyframes spin {
+              0% { transform: rotate(0deg); }
+              100% { transform: rotate(360deg); }
+            }
+          `}
         </style>
       </div>
     );
@@ -78,25 +73,30 @@ const Maps = ({ routeCoords }) => {
 
   return (
     <div className="w-full h-full flex justify-center items-center">
-          <MapContainer
-    className="w-full h-full"
-      center={position}
-      zoom={16}
-    >
-      <TileLayer
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-      />
-      <Marker position={position} />
+      <MapContainer center={selfLocation} zoom={15} className="w-full h-full">
+        <TileLayer
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          attribution='&copy; OpenStreetMap contributors'
+        />
 
-      {routeCoords.length > 0 && (
-        <>
-          <Polyline positions={routeCoords} color="black" />
-          <FitMapToRoute routeCoords={routeCoords} />
-        </>
-      )}
-    </MapContainer>
-    
+        {/* Self marker with rider/driver icon */}
+        <Marker
+          position={selfLocation}
+          icon={isRider ? riderIcon : driverIcon}
+        />
+
+        {/* Other markers always as drivers (🚗) */}
+        {otherMarkers.map((pos, idx) => (
+          <Marker key={idx} position={pos} icon={driverIcon} />
+        ))}
+
+        {routeCoords.length > 0 && (
+          <>
+            <Polyline positions={routeCoords} color="black" />
+            <FitMapToRoute routeCoords={routeCoords} />
+          </>
+        )}
+      </MapContainer>
     </div>
   );
 };

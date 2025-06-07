@@ -5,12 +5,15 @@ const express = require("express");
 const app = express();
 
 const cors = require("cors");
-// Allow requests from the frontend
+
+
+
 app.use(cors({
-    origin: [process.env.REACT_APP_SERVER_URL, 'http://localhost:5173'], // Add explicit origin
+    origin: "*",
     credentials: true,
     methods: ["GET", "POST", "OPTIONS"],
 }));
+
 
 // For preflight requests
 app.options('*', cors());
@@ -37,26 +40,108 @@ app.use("/map", mapRoutes);
 
 const http = require('http');
 const server = http.createServer(app);
+
 const io = require("socket.io")(server, {
   cors: {
-    origin: [process.env.REACT_APP_SERVER_URL, 'http://localhost:5173'], // Add explicit origin
+    origin: "*",
     methods: ["GET", "POST", "OPTIONS"],
     credentials: true,
   }
 });
 
+// Store user data with more details
+const riders = {};   // { socketId: { location: [lat, lng] } }
+const drivers = {};  // { socketId: { location: [lat, lng], driverId: string } }
 
-io.on('connection', function(socket) {
-    console.log('User connected with ID:', socket.id);
+// --- HELPER FUNCTIONS for broadcasting updates ---
+const broadcastDriversUpdate = () => {
+    const driverLocations = Object.values(drivers).map(driver => driver.location);
+    io.to('riders_room').emit("drivers_update", driverLocations);
+    console.log(`Broadcasted ${driverLocations.length} drivers to all riders.`);
+};
+
+const broadcastRidersUpdate = () => {
+    const riderLocations = Object.values(riders).map(rider => rider.location);
+    io.to('drivers_room').emit("riders_update", riderLocations);
+    console.log(`Broadcasted ${riderLocations.length} riders to all drivers.`);
+};
+
+
+io.on("connection", (socket) => {
+  console.log("New connection:", socket.id);
+
+  // R I D E R  LOGIC ==========================
+  socket.on("register_rider", (location) => {
+    console.log(`Rider ${socket.id} registered at:`, location);
+    socket.join('riders_room');
+    riders[socket.id] = { location: location };
+
+    // Send current drivers list to the new rider
+    const driverLocations = Object.values(drivers).map(driver => driver.location);
+    socket.emit("drivers_update", driverLocations);
+    
+    // Notify all drivers about the new/updated rider list
+    broadcastRidersUpdate();
+  });
+
+  socket.on("rider_location_update", (location) => {
+    if (riders[socket.id]) {
+      riders[socket.id].location = location;
+      // Broadcast updated rider list to all drivers
+      broadcastRidersUpdate();
+    }
+  });
+
+
+  // D R I V E R  LOGIC ==========================
+  socket.on("register_driver", (data) => {
+    const { location, driverId } = data;
+    console.log(`Driver ${socket.id} (${driverId}) registered at:`, location);
+    socket.join('drivers_room');
+    drivers[socket.id] = { location, driverId };
+
+    // --- FIX 2: Send ALL rider locations to the new driver ---
+    const riderLocations = Object.values(riders).map(rider => rider.location);
+    socket.emit("riders_update", riderLocations);
+
+    // Update all riders with the new driver list
+    broadcastDriversUpdate();
+  });
+
+  socket.on("driver_location_update", (location) => {
+    if (drivers[socket.id]) {
+      drivers[socket.id].location = location;
+      // Broadcast updated driver list to all riders
+      broadcastDriversUpdate();
+    }
+  });
+
+
+  // DISCONNECT HANDLERS ==========================
+  socket.on("disconnect", () => {
+    console.log(`Socket ${socket.id} disconnected`);
+    
+    // Clean up if the socket was a rider
+    if (riders[socket.id]) {
+      delete riders[socket.id];
+      console.log(`Rider ${socket.id} removed.`);
+      // Update all drivers that a rider has left
+      broadcastRidersUpdate();
+    }
+    
+    // Clean up if the socket was a driver
+    if (drivers[socket.id]) {
+      delete drivers[socket.id];
+      console.log(`Driver ${socket.id} removed.`);
+      // Update all riders that a driver has left
+      broadcastDriversUpdate();
+    }
+    console.log(`Active riders: ${Object.keys(riders).length}, Active drivers: ${Object.keys(drivers).length}`);
+  });
 });
 
-// Root endpoint with CORS headers explicitly set
 app.get("/", (req, res) => {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
-  res.send("Hello World");
+  res.send("Uber Clone Backend is running.");
 });
-
-
 
 module.exports = { app, server };

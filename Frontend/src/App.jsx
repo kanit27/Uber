@@ -10,7 +10,7 @@ import UserProtectedWrapper from './pages/UserProtectedWrapper';
 import UserSignUp from './pages/userSignUp';
 import UserLogin from './pages/UserLogin';
 import UserLogout from './pages/UserLogout';
-import Search from './pages/Search';
+
 
 
 const App = () => {
@@ -31,11 +31,11 @@ const App = () => {
           }
         />
         <Route
-          path="/search"
+          path="/caption-home"
           element={
-            <UserProtectedWrapper>
-            <Search />
-            </UserProtectedWrapper>
+            <CaptionHome />
+            // <UserProtectedWrapper>
+            // </UserProtectedWrapper>
           }
         />
         <Route
