@@ -9,7 +9,7 @@ import CaptionHome from './pages/CaptionHome'
 import UserProtectedWrapper from './pages/UserProtectedWrapper';
 import UserSignUp from './pages/userSignUp';
 import UserLogin from './pages/userLogin';
-import UserLogout from './pages/userLogout';
+import UserLogout from './pages/UserLogout';
 
 
 
