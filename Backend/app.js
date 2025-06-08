@@ -10,6 +10,7 @@ const cors = require("cors");
 
 app.use(cors({
     origin: "https://uber-production-4170.up.railway.app",
+    // origin: "*",
     credentials: true,
     methods: ["GET", "POST", "OPTIONS"],
 }));
@@ -17,6 +18,7 @@ app.use(cors({
 
 // For preflight requests
 app.options('https://uber-production-4170.up.railway.app', cors());
+// app.options('*', cors());
 
 const connectToDb = require("./db/db.js");
 connectToDb();
@@ -44,6 +46,7 @@ const server = http.createServer(app);
 const io = require("socket.io")(server, {
   cors: {
     origin: "https://uber-production-4170.up.railway.app",
+    // origin: "*",
     methods: ["GET", "POST", "OPTIONS"],
     credentials: true,
   },
