@@ -1,6 +1,6 @@
 import React from 'react';
 import { Route, Routes } from 'react-router-dom';
-import Start from './pages/start';
+import Start from './pages/Start';
 import CaptionLogin from './pages/captionLogin';
 import CaptionSignUp from './pages/captionSignUp';
 import './App.css';
