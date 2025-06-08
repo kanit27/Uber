@@ -5,7 +5,7 @@ import CaptionLogin from './pages/captionLogin';
 import CaptionSignUp from './pages/captionSignUp';
 import './App.css';
 import Home from './pages/home';
-import CaptionHome from './pages/captionHome'
+import CaptionHome from './pages/CaptionHome'
 import UserProtectedWrapper from './pages/userProtectedWrapper';
 import UserSignUp from './pages/userSignUp';
 import UserLogin from './pages/userLogin';
