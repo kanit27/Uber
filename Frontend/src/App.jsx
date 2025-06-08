@@ -4,7 +4,7 @@ import Start from './pages/Start';
 import CaptionLogin from './pages/captionLogin';
 import CaptionSignUp from './pages/captionSignUp';
 import './App.css';
-import Home from './pages/Home';
+import Home from "../src/pages/Home";
 import CaptionHome from './pages/CaptionHome'
 import UserProtectedWrapper from './pages/UserProtectedWrapper';
 import UserSignUp from './pages/userSignUp';
