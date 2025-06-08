@@ -25,17 +25,17 @@ const App = () => {
         <Route
           path="/home"
           element={
+            <UserProtectedWrapper>
             <home />
-            // <UserProtectedWrapper>
-            // </UserProtectedWrapper>
+            </UserProtectedWrapper>
           }
         />
         <Route
           path="/caption-home"
           element={
+            <UserProtectedWrapper>
             <CaptionHome />
-            // <UserProtectedWrapper>
-            // </UserProtectedWrapper>
+            </UserProtectedWrapper>
           }
         />
         <Route
