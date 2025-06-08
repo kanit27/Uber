@@ -1,15 +1,15 @@
 import React from 'react';
 import { Route, Routes } from 'react-router-dom';
-import Start from './pages/Start';
+import Start from './pages/start';
 import CaptionLogin from './pages/captionLogin';
 import CaptionSignUp from './pages/captionSignUp';
 import './App.css';
 import Home from './pages/home';
-import CaptionHome from './pages/CaptionHome'
-import UserProtectedWrapper from './pages/UserProtectedWrapper';
+import CaptionHome from './pages/captionHome'
+import UserProtectedWrapper from './pages/userProtectedWrapper';
 import UserSignUp from './pages/userSignUp';
-import UserLogin from './pages/UserLogin';
-import UserLogout from './pages/UserLogout';
+import UserLogin from './pages/userLogin';
+import UserLogout from './pages/userLogout';
 
 
 
