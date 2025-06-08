@@ -4,7 +4,7 @@ import Start from './pages/Start';
 import CaptionLogin from './pages/captionLogin';
 import CaptionSignUp from './pages/captionSignUp';
 import './App.css';
-import home from './pages/home';
+import Home from './pages/home';
 import CaptionHome from './pages/CaptionHome'
 import UserProtectedWrapper from './pages/UserProtectedWrapper';
 import UserSignUp from './pages/userSignUp';
@@ -26,7 +26,7 @@ const App = () => {
           path="/home"
           element={
             <UserProtectedWrapper>
-            <home />
+            <Home />
             </UserProtectedWrapper>
           }
         />
