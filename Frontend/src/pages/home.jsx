@@ -1,7 +1,7 @@
 import Header from "../components/Header";
 import Maps from "../components/Maps";
 import WhereTo from "../components/WhereTo";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import socket from "../socket"; // import socket
 
 const Home = () => {
@@ -9,6 +9,7 @@ const Home = () => {
   const [location, setLocation] = useState(null);
   const [drivers, setDrivers] = useState([]);
   const [isRegistered, setIsRegistered] = useState(false);
+  const [requesting, setRequesting] = useState(false);
 
   useEffect(() => {
     const watchId = navigator.geolocation.watchPosition(
@@ -45,6 +46,14 @@ const Home = () => {
     };
   }, [isRegistered]);
 
+  const handleRequestRide = () => {
+    if (location) {
+      socket.emit("ride_request", { location });
+      setRequesting(true);
+      setTimeout(() => setRequesting(false), 3000); // Reset after 3s
+    }
+  };
+
   return (
     <div className="h-screen w-screen overflow-hidden relative">
       <Maps
@@ -54,13 +63,24 @@ const Home = () => {
         isRider={true}
       />
       <WhereTo setRouteCoords={setRouteCoords} />
-      
+
+      {/* Request Ride Button */}
+      {/* <div className="absolute bottom-24 left-1/2 -translate-x-1/2 z-[99999]">
+        <button
+          onClick={handleRequestRide}
+          className="bg-green-600 text-white px-6 py-2 rounded shadow-lg text-lg"
+          disabled={requesting || !location}
+        >
+          {requesting ? "Request Sent!" : "Request Ride"}
+        </button>
+      </div> */}
+
       {/* Debug info - remove in production */}
-      <div className="absolute top-20 left-4 bg-white p-2 rounded shadow text-xs z-[99999]">
+      {/* <div className="absolute top-60 left-4 bg-white p-2 rounded shadow text-xs z-[9999]">
         <div>Riders: {location ? '1' : '0'}</div>
         <div>Drivers: {drivers.length}</div>
         <div>Registered: {isRegistered ? 'Yes' : 'No'}</div>
-      </div>
+      </div> */}
     </div>
   );
 };

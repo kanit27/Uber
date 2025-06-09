@@ -120,6 +120,18 @@ io.on("connection", (socket) => {
   });
 
 
+  // Rider requests a ride
+  socket.on("ride_request", (data) => {
+    // Broadcast to all drivers
+    io.to('drivers_room').emit("ride_request", {
+      riderId: socket.id,
+      location: data.location, // [lat, lng]
+      timestamp: Date.now(),
+    });
+    console.log(`Rider ${socket.id} requested a ride at:`, data.location);
+  });
+
+
   // DISCONNECT HANDLERS ==========================
   socket.on("disconnect", () => {
     console.log(`Socket ${socket.id} disconnected`);

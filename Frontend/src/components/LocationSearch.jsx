@@ -9,6 +9,8 @@ const LocationSearch = ({
   setDestinationCoords,
   setLocationOpen,
   setPanelOpen,
+    setStartingLocationName,
+  setDestinationLocationName,
 }) => {
   const [currentLocation, setCurrentLocation] = useState("");
   const [destination, setDestination] = useState("");
@@ -49,8 +51,12 @@ const LocationSearch = ({
     console.log(`Selected ${type}:`, displayName);
     if (type === "current") {
       setCurrentLocation(displayName);
+       setStartingLocationName && setStartingLocationName(displayName);
+      setCurrentCoords({ lat: parseFloat(suggestion.lat), lng: parseFloat(suggestion.lon) });
     } else {
       setDestination(displayName);
+      setDestinationLocationName && setDestinationLocationName(displayName);
+      setDestinationCoords({ lat: parseFloat(suggestion.lat), lng: parseFloat(suggestion.lon) });
     }
     setSuggestions((prev) => ({ ...prev, [type]: [] }));
 

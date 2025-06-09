@@ -3,26 +3,41 @@ import { MdOutlineEmergencyShare, MdSearch, MdStarRate } from "react-icons/md";
 import { useGSAP } from "@gsap/react";
 import { RiArrowDownWideLine } from "react-icons/ri";
 import { GrLocationPin } from "react-icons/gr";
+import { GrLocation } from "react-icons/gr";
 import gsap from "gsap";
 import { AiOutlineSafety } from "react-icons/ai";
 import LocationSearch from "../components/LocationSearch";
 import RidesList from "../components/RidesList";
 import { TiMessage } from "react-icons/ti";
 import { HiLocationMarker } from "react-icons/hi";
-import { IoCallOutline, IoWallet } from "react-icons/io5";
+import {
+  IoCallOutline,
+  IoWallet,
+  IoArrowBackCircleOutline,
+} from "react-icons/io5";
+import { TfiLineDotted } from "react-icons/tfi";
+import socket from "../socket";
 
 const WhereTo = ({ setRouteCoords }) => {
   const [panelOpen, setPanelOpen] = useState(false);
   const [locationOpen, setLocationOpen] = useState(false);
   const [ridesOpen, setRidesOpen] = useState(false);
+  const [smallPanelOpen, setSmallPanelOpen] = useState(false);
   const [currentCoords, setCurrentCoords] = useState(null);
   const [destinationCoords, setDestinationCoords] = useState(null);
+  const [startingLocationName, setStartingLocationName] =
+    useState("Starting Location");
+  const [destinationLocationName, setDestinationLocationName] = useState(
+    "Destination Location"
+  );
   const panelRef = useRef(null);
   const panelCloseRef = useRef(null);
   const locationRef = useRef(null);
   const locationCloseRef = useRef(null);
   const ridesRef = useRef(null);
   const ridesCloseRef = useRef(null);
+  const smallPanelRef = useRef(null);
+  const smallPanelCloseRef = useRef(null);
 
   useGSAP(
     function () {
@@ -66,7 +81,7 @@ const WhereTo = ({ setRouteCoords }) => {
         gsap.to(locationCloseRef.current, {
           duration: 0.5,
           y: "0%",
-          opacity: 1,
+          // opacity: 1,
           ease: "power2.out",
         });
       } else {
@@ -78,7 +93,7 @@ const WhereTo = ({ setRouteCoords }) => {
         gsap.to(locationCloseRef.current, {
           duration: 0.5,
           y: "-100%",
-          opacity: 0,
+          // opacity: 0,
           ease: "power2.out",
         });
       }
@@ -115,6 +130,37 @@ const WhereTo = ({ setRouteCoords }) => {
     [ridesOpen]
   );
 
+  useGSAP(
+    function () {
+      if (smallPanelOpen) {
+        gsap.to(smallPanelRef.current, {
+          duration: 0.5,
+          y: "-100%",
+          ease: "power2.out",
+        });
+        gsap.to(smallPanelCloseRef.current, {
+          duration: 0.5,
+          y: "0%",
+          opacity: 1,
+          ease: "power2.out",
+        });
+      } else {
+        gsap.to(smallPanelRef.current, {
+          duration: 0.5,
+          y: "0%",
+          ease: "power2.out",
+        });
+        gsap.to(smallPanelCloseRef.current, {
+          duration: 0.5,
+          y: "-100%",
+          opacity: 0,
+          ease: "power2.out",
+        });
+      }
+    },
+    [smallPanelOpen]
+  );
+
   useEffect(() => {
     const fetchRoute = async () => {
       if (!currentCoords || !destinationCoords) return;
@@ -140,6 +186,17 @@ const WhereTo = ({ setRouteCoords }) => {
 
     fetchRoute();
   }, [currentCoords, destinationCoords]);
+
+  const handleConfirmRide = () => {
+    // You can add more ride details as needed
+    socket.emit("ride_request", {
+      location: currentCoords, // or pickup location
+      destination: destinationCoords,
+      startingLocationName,
+      destinationLocationName,
+      // Add price, vehicle, etc. if needed
+    });
+  };
 
   return (
     <>
@@ -179,6 +236,8 @@ const WhereTo = ({ setRouteCoords }) => {
               setDestinationCoords={setDestinationCoords}
               setLocationOpen={setLocationOpen}
               setPanelOpen={setPanelOpen}
+              setStartingLocationName={setStartingLocationName}
+              setDestinationLocationName={setDestinationLocationName}
             />
           </div>
           <div
@@ -191,7 +250,10 @@ const WhereTo = ({ setRouteCoords }) => {
               </h1>
               <div
                 ref={locationCloseRef}
-                onClick={() => setLocationOpen(false)}
+                onClick={() => {
+                  setLocationOpen(false);
+                  setSmallPanelOpen(true);
+                }}
                 className="flex justify-center items-center gap-2"
               >
                 <RiArrowDownWideLine className="text-3xl" />
@@ -203,6 +265,7 @@ const WhereTo = ({ setRouteCoords }) => {
             <button
               ref={ridesCloseRef}
               onClick={() => {
+                handleConfirmRide();
                 setLocationOpen(false);
                 setPanelOpen(false);
                 setRidesOpen(true);
@@ -215,8 +278,71 @@ const WhereTo = ({ setRouteCoords }) => {
             </button>
           </div>
           <div
-            ref={ridesRef}
-            onClick={() => {
+            ref={smallPanelRef}
+            className="w-full h-[13vh] absolute top-0 left-0 py-2 rounded-2xl bg-white"
+          >
+            <div className="w-full  flex justify-between items-center">
+
+              <div
+                onClick={() => {
+                  setLocationOpen(true);
+                  setSmallPanelOpen(false);
+                }}
+                className=" text-black h-full w-full flex flex-col "
+                >
+                <div className="flex  justify-between items-center w-full">
+                  <div className=" h-1/2 ">
+                  <GrLocationPin className="text-3xl ml-14" />
+                  </div>
+                  <div className=" h-1/2 ">
+                  <TfiLineDotted className="text-6xl " />
+                  </div>
+                  <div className=" h-1/2">
+                  <GrLocation className="text-3xl mr-14" />
+                  </div>
+                </div>
+                <div className=" flex justify-between w-full">
+                  <div className="flex flex-col w-full max-w-[160px] h-12">
+                  <h2
+                    className="w-full h-full text-mg  leading-tight text-center tracking-tighter overflow-hidden"
+                    style={{
+                    display: "-webkit-box",
+                    WebkitLineClamp: 2,
+                    WebkitBoxOrient: "vertical",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    minHeight: "2.5em", // ensures at least 2 lines
+                    maxHeight: "2.5em", // restricts to 2 lines
+                    whiteSpace: "normal",
+                    }}
+                  >
+                    {startingLocationName}
+                  </h2>
+                  </div>
+                  <div className=" flex flex-col w-full max-w-[160px] h-12">
+                  <h2
+                    className="w-full h-full  text-mg leading-tight text-center tracking-tighter overflow-hidden"
+                    style={{
+                    display: "-webkit-box",
+                    WebkitLineClamp: 2,
+                    WebkitBoxOrient: "vertical",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    minHeight: "2.5em",
+                    maxHeight: "2.5em",
+                    whiteSpace: "normal",
+                    }}
+                  >
+                    {destinationLocationName}
+                  </h2>
+                  </div>
+                </div>
+                </div>
+              </div>
+              </div>
+              <div
+              ref={ridesRef}
+              onClick={() => {
               setLocationOpen(false);
               setPanelOpen(false);
             }}
@@ -244,28 +370,20 @@ const WhereTo = ({ setRouteCoords }) => {
                   alt=""
                 />
                 <div className="w-full flex flex-col items-center justify-start ">
-                  <div className="w-full flex flex-row gap-3 px-2 py-2 mt-2 ">
+                  <div className="w-full flex flex-row gap-6 px-2 py-2 mt-2 ">
                     <div className="rounded-full w-12 h-12 mt-4 flex items-center justify-center ">
-                      <HiLocationMarker className="w-6 h-6  text-black" />
+                      <HiLocationMarker className="w-6 h-6 ml-4 text-black" />
                     </div>
-                    <div className="flex flex-col  p-2 rounded-2xl">
-                      <h1 className="text-xl font-semibold">Waghawadi Road,</h1>
-                      <h2 className="text-md leading-none ">
-                        Flat No. 12, Plot No. 45, Area Name, Bhavnagar, Gujarat,
-                        India
-                      </h2>
+                    <div className=" text-lg p-1">
+                      {startingLocationName}
                     </div>
                   </div>
-                  <div className="w-full flex flex-row gap-3 px-2 py-4 mt-2">
+                  <div className="w-full flex flex-row gap-6 px-2 py-4 mt-2">
                     <div className="rounded-full  w-12 h-12 mt-4 flex items-center justify-center ">
-                      <GrLocationPin className="w-6 h-6 text-black" />
+                      <GrLocationPin className="w-6 h-6 ml-4 text-black" />
                     </div>
-                    <div className="flex flex-col  p-2 rounded-2xl">
-                      <h1 className="text-xl font-semibold">Waghawadi Road,</h1>
-                      <h2 className="text-md leading-none">
-                        Flat No. 12, Plot No. 45, Area Name, Bhavnagar, Gujarat,
-                        India
-                      </h2>
+                    <div className=" text-lg p-1 ">
+                      {destinationLocationName}
                     </div>
                   </div>
                 </div>
