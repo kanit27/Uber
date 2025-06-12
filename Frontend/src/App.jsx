@@ -7,8 +7,8 @@ import './App.css';
 import Home from './pages/home';
 import CaptionHome from './pages/CaptionHome'
 import UserProtectedWrapper from './pages/UserProtectedWrapper';
-import UserSignUp from './pages/UserSignUp';
-import UserLogin from './pages/UserLogin';
+import UserSignUp from './pages/userSignUp';
+import UserLogin from './pages/userLogin';
 // import UserLogout from './pages/UserLogout';
 import CaptionProtectedWrapper from './pages/CaptionProtectedWrapper';
 import CaptionProfile from './pages/CaptionProfile';
