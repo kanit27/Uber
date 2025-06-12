@@ -28,6 +28,7 @@ module.exports.registerCaption = async (req, res, next) => {
             plate: vehicle.plate,
             capacity: vehicle.capacity,
             vehicleType: vehicle.vehicleType,
+            vehicleModel: vehicle.vehicleModel
         });
         const token = caption.generateAuthToken();
         res.status(201).json({ token, caption });

@@ -9,7 +9,7 @@ const LocationSearch = ({
   setDestinationCoords,
   setLocationOpen,
   setPanelOpen,
-    setStartingLocationName,
+  setStartingLocationName,
   setDestinationLocationName,
 }) => {
   const [currentLocation, setCurrentLocation] = useState("");

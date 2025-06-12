@@ -7,9 +7,12 @@ import './App.css';
 import Home from './pages/home';
 import CaptionHome from './pages/CaptionHome'
 import UserProtectedWrapper from './pages/UserProtectedWrapper';
-import UserSignUp from './pages/userSignUp';
-import UserLogin from './pages/userLogin';
-import UserLogout from './pages/UserLogout';
+import UserSignUp from './pages/UserSignUp';
+import UserLogin from './pages/UserLogin';
+// import UserLogout from './pages/UserLogout';
+import CaptionProtectedWrapper from './pages/CaptionProtectedWrapper';
+import CaptionProfile from './pages/CaptionProfile';
+import UserProfile from './pages/UserProfile';
 
 
 
@@ -25,29 +28,34 @@ const App = () => {
         <Route
           path="/home"
           element={
+            <UserProtectedWrapper>
             <Home />
-            // <UserProtectedWrapper>
-            // </UserProtectedWrapper>
+            </UserProtectedWrapper>
           }
         />
         <Route
           path="/caption-home"
           element={
+            <CaptionProtectedWrapper>
             <CaptionHome />
-            // <UserProtectedWrapper>
-            // </UserProtectedWrapper>
+            </CaptionProtectedWrapper>
           }
         />
-        <Route
+        {/* <Route
           path="/users/logout"
           element={
             <UserProtectedWrapper>
               <UserLogout />
             </UserProtectedWrapper>
           }
-        />
-        <Route path="/caption-home" element={
-          <CaptionHome />
+        /> */}
+        <Route path="/caption-profile" element={
+          <CaptionProfile />
+        } />
+        <Route path="/user-profile" element={
+          <UserProtectedWrapper>
+          <UserProfile />
+          </UserProtectedWrapper>
         } />
       </Routes>
     </div>

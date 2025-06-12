@@ -12,6 +12,7 @@ router.post('/register', [
     body('vehicle.plate').isLength({ min: 3 }).withMessage('Plate must be at least 3 characters long'),
     body('vehicle.capacity').isNumeric().withMessage('Capacity must be a number'),
     body('vehicle.vehicleType').isIn(['car','motorcycle','auto']).withMessage('Vehicle type must be car, motorcycle, or auto'),
+    body('vehicle.vehicleModel').isLength({ min: 3 }).withMessage('Vehicle model must be at least 3 characters long'),
 ],
     captionController.registerCaption
 );

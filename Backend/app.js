@@ -6,19 +6,16 @@ const app = express();
 
 const cors = require("cors");
 
-
-
 app.use(cors({
-    origin: "https://uber-production-4170.up.railway.app",
-    // origin: "*",
+    // origin: "https://uber-production-4170.up.railway.app",
+    origin: "*",
     credentials: true,
     methods: ["GET", "POST", "OPTIONS"],
 }));
 
-
 // For preflight requests
-app.options('https://uber-production-4170.up.railway.app', cors());
-// app.options('*', cors());
+// app.options('https://uber-production-4170.up.railway.app', cors());
+app.options('*', cors());
 
 const connectToDb = require("./db/db.js");
 connectToDb();
@@ -45,8 +42,8 @@ const server = http.createServer(app);
 
 const io = require("socket.io")(server, {
   cors: {
-    origin: "https://uber-production-4170.up.railway.app",
-    // origin: "*",
+    // origin: "https://uber-production-4170.up.railway.app",
+    origin: "*",
     methods: ["GET", "POST", "OPTIONS"],
     credentials: true,
   },
@@ -68,7 +65,6 @@ const broadcastRidersUpdate = () => {
     io.to('drivers_room').emit("riders_update", riderLocations);
     console.log(`Broadcasted ${riderLocations.length} riders to all drivers.`);
 };
-
 
 io.on("connection", (socket) => {
   console.log("New connection:", socket.id);
@@ -95,7 +91,6 @@ io.on("connection", (socket) => {
     }
   });
 
-
   // D R I V E R  LOGIC ==========================
   socket.on("register_driver", (data) => {
     const { location, driverId } = data;
@@ -119,27 +114,73 @@ io.on("connection", (socket) => {
     }
   });
 
-
+  // R I D E  R E Q U E S T  LOGIC ==========================
+  
   // Rider requests a ride
   socket.on("ride_request", (data) => {
+    console.log(`🚗 RIDE REQUEST: Rider ${socket.id} requested a ride:`, data);
+    
     // Broadcast to all drivers
-    io.to('drivers_room').emit("ride_request", {
+    io.to("drivers_room").emit("ride_request", {
       riderId: socket.id,
       location: data.location, // [lat, lng]
+      destination: data.destination, // [lat, lng]
+      startingLocationName: data.startingLocationName,
+      destinationLocationName: data.destinationLocationName,
       timestamp: Date.now(),
     });
-    console.log(`Rider ${socket.id} requested a ride at:`, data.location);
+    
+    console.log(`📡 Ride request broadcasted to all drivers in drivers_room`);
   });
 
+  // Driver accepts a ride - MOVED OUTSIDE of ride_request listener
+socket.on("ride_accept", ({ rideRequest, driverId, driverName, vehiclePlate, vehicleColor, vehicleType, vehicleCapacity, vehicleModel }) => {
+  const { riderId } = rideRequest;
+  if (riders[riderId]) {
+    const driverInfo = {
+      driverId,
+      name: driverName,
+      vehicle: {
+        plate: vehiclePlate,
+        color: vehicleColor,
+        vehicleType: vehicleType,
+        capacity: vehicleCapacity,
+        model: vehicleModel
+      },
+    };
+    io.to(riderId).emit("ride_accepted", driverInfo); // ✅ Emit to specific rider
+    console.log(`📤 Emitting 'ride_accepted' to rider ${riderId} with:`, driverInfo);
+  } else {
+    console.log(`❌ Rider ${riderId} not found for ride acceptance.`);
+  }
+});
+
+
+  // Driver rejects a ride
+  socket.on("ride_reject", ({ rideRequest }) => {
+    console.log(`❌ RIDE REJECT: Driver ${socket.id} rejected ride:`, rideRequest);
+    
+    const { riderId } = rideRequest;
+    if (riders[riderId]) {
+      // Notify the specific rider that their ride has been rejected
+      io.to(riderId).emit("ride_rejected", {
+        driverId: socket.id,
+        timestamp: Date.now(),
+      });
+      console.log(`📤 Ride rejection sent to rider ${riderId}`);
+    } else {
+      console.log(`❌ Rider ${riderId} not found for ride rejection.`);
+    }
+  });
 
   // DISCONNECT HANDLERS ==========================
   socket.on("disconnect", () => {
-    console.log(`Socket ${socket.id} disconnected`);
+    console.log(`🔌 Socket ${socket.id} disconnected`);
     
     // Clean up if the socket was a rider
     if (riders[socket.id]) {
       delete riders[socket.id];
-      console.log(`Rider ${socket.id} removed.`);
+      console.log(`👤 Rider ${socket.id} removed.`);
       // Update all drivers that a rider has left
       broadcastRidersUpdate();
     }
@@ -147,11 +188,11 @@ io.on("connection", (socket) => {
     // Clean up if the socket was a driver
     if (drivers[socket.id]) {
       delete drivers[socket.id];
-      console.log(`Driver ${socket.id} removed.`);
+      console.log(`🚗 Driver ${socket.id} removed.`);
       // Update all riders that a driver has left
       broadcastDriversUpdate();
     }
-    console.log(`Active riders: ${Object.keys(riders).length}, Active drivers: ${Object.keys(drivers).length}`);
+    console.log(`📊 Active riders: ${Object.keys(riders).length}, Active drivers: ${Object.keys(drivers).length}`);
   });
 });
 

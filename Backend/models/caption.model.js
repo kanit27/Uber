@@ -61,11 +61,16 @@ const captionSchema = new mongoose.Schema({
             type: String,
             enum: ['car', 'motorcycle', 'auto'],
             required: true,
-        }
+        },
+        vehicleModel:{
+            type: String,
+            required: true,
+            minlength: [3, 'Vehicle model must be at least 3 characters long']
+        },
     },
     location:{
         latitude:{
-            type: Number,
+            type: Number,       
             min: -90,
             max: 90,
         },

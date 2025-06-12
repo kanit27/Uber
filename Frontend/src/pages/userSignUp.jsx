@@ -10,6 +10,7 @@ const UserSignUp = () => {
   const [firstname, setfirstname] = useState("");
   const [lastname, setlastname] = useState("");
   const [userData, setUserData] = useState({});
+  const [errors, setErrors] = useState([]);
 
   const navigate = useNavigate();
 
@@ -17,6 +18,8 @@ const UserSignUp = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setErrors([]); // Clear previous errors
+
     const newUser = {
       email: email,
       password: password,
@@ -26,30 +29,41 @@ const UserSignUp = () => {
       }
     };
 
-    const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/users/register`, newUser);
+    try {
+      const response = await axios.post(
+        `${import.meta.env.VITE_BASE_URL}/users/register`,
+        newUser
+      );
 
-    if (response.status === 201) {
-      console.log("User registered successfully", response.data);
-      const data = response.data;
-      setUser(data.user);
-      localStorage.setItem("token", data.token);
-      navigate("/home");
-    }
-
-    if (response.status === 400) {
-      console.log("User already exists", response.data);
+      if (response.status === 201) {
+        console.log("User registered successfully", response.data);
+        const data = response.data;
+        setUser(data.user);
+        localStorage.setItem("token", data.token);
+        navigate("/home");
+      }
+    } catch (err) {
+      // Handle validation errors from backend
+      if (err.response && err.response.data && err.response.data.errors) {
+        setErrors(err.response.data.errors.map(e => e.msg));
+      } else if (err.response && err.response.data && err.response.data.message) {
+        setErrors([err.response.data.message]);
+      } else {
+        setErrors(["An unexpected error occurred."]);
+      }
     }
 
     setEmail("");
     setPassword("");
     setfirstname("");
     setlastname("");
-
-  }
+  };
 
   return (
     <div className="w-full px-10 py-10 text-md flex flex-col h-screen">
-      <form onSubmit={(e) => handleSubmit(e)} action="">
+      <form onSubmit={handleSubmit} action="">
+        
+
         <div className=" flex flex-row gap-3 ">
           <div>
             <label htmlFor="name">First Name</label>
@@ -96,14 +110,14 @@ const UserSignUp = () => {
             onChange={(e) => setPassword(e.target.value)}
             className="w-full h-10 px-4 mb-5 bg-neutral-100 outline-none rounded-md"
             type="password"
-            name="email"
-            id="email"
+            name="password"
+            id="password"
           />
         </div>
 
         <div className="flex flex-col gap-3">
           <button className="w-full h-10 bg-black text-white rounded-md">
-            Login
+            Sign Up
           </button>
         </div>
       </form>
@@ -118,6 +132,16 @@ const UserSignUp = () => {
           </Link>
         </p>
       </div>
+      {/* Error Display */}
+        {errors.length > 0 && (
+          <div className="mb-4 mt-4 bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded">
+            <ul className="list-disc pl-5">
+              {errors.map((err, idx) => (
+                <li key={idx}>{err}</li>
+              ))}
+            </ul>
+          </div>
+        )}
     </div>
   );
 };
