@@ -32,7 +32,10 @@ const UserSignUp = () => {
     try {
       const response = await axios.post(
         `${import.meta.env.VITE_BASE_URL}/users/register`,
-        newUser
+        newUser,
+        {
+          withCredentials: true, // Include credentials for CORS requests
+        }
       );
 
       if (response.status === 201) {
@@ -40,6 +43,7 @@ const UserSignUp = () => {
         const data = response.data;
         setUser(data.user);
         localStorage.setItem("token", data.token);
+        localStorage.setItem("user", JSON.stringify(data.user));
         navigate("/home");
       }
     } catch (err) {
