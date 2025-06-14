@@ -141,3 +141,4 @@ module.exports.logoutCaption = async (req, res) => {
         console.error("Logout Error:", error);
         return res.status(500).json({ message: "Server error", error: error.message });
     }
+};
