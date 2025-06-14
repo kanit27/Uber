@@ -52,6 +52,7 @@ const Home = ({ setRidesOpen }) => {
       [rideAccepted]
     );
 
+
   useEffect(() => {
     const watchId = navigator.geolocation.watchPosition(
       (pos) => {
@@ -68,8 +69,11 @@ const Home = ({ setRidesOpen }) => {
           socket.emit("rider_location_update", loc);
         }
       },
-      (err) => console.error("Location error:", err),
-      { enableHighAccuracy: true, maximumAge: 0, timeout: 30000 }
+      (err) => {
+        console.error("Location error:", err);
+        errorCallback(err);
+      },
+      { enableHighAccuracy: true, maximumAge: 0, timeout: 60000 }
     );
 
     // Listen for driver updates
