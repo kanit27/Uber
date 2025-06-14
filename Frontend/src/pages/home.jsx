@@ -69,7 +69,7 @@ const Home = ({ setRidesOpen }) => {
         }
       },
       (err) => console.error("Location error:", err),
-      { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 }
+      { enableHighAccuracy: true, maximumAge: 0, timeout: 30000 }
     );
 
     // Listen for driver updates
@@ -197,5 +197,13 @@ const Home = ({ setRidesOpen }) => {
     </div>
   );
 };
+
+function errorCallback(error) {
+  if (error.code === 3) {
+    alert("Location request timed out. Please try again or check your device settings.");
+  } else {
+    alert("Location error: " + error.message);
+  }
+}
 
 export default Home;
