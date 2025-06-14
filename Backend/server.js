@@ -1,4 +1,4 @@
-const { server } = require('./app');
+const server = require('./app'); // Remove destructuring
 const port = process.env.PORT || 3000;
 
 server.listen(port, () => {
