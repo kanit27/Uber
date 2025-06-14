@@ -30,8 +30,7 @@ const UserLogin = () => {
           withCredentials: true,
           headers: {
             'Content-Type': 'application/json',
-          },
-          timeout: 10000, // 🔥 Add timeout
+          }
         }
       );
       
@@ -62,8 +61,6 @@ const UserLogin = () => {
         setErrors(err.response.data.errors.map((e) => e.msg));
       } else if (err.response && err.response.data && err.response.data.message) {
         setErrors([err.response.data.message]);
-      } else if (err.code === 'ECONNABORTED') {
-        setErrors(["Request timeout. Please try again."]);
       } else if (err.message.includes('Network Error')) {
         setErrors(["Network error. Please check your connection."]);
       } else {
