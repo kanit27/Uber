@@ -6,18 +6,27 @@ const app = express();
 
 const cors = require("cors");
 
+// 🔥 FIXED CORS CONFIGURATION
 app.use(cors({
-    origin: "https://uber-1-0tlr.onrender.com",
-    // origin: "*",
+    origin: [
+        "https://uber-1-0tlr.onrender.com",     
+        "http://localhost:5173"         
+    ],
     credentials: true,
-    methods: ["GET", "POST", "OPTIONS"],
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "Cookie"],
+    exposedHeaders: ["Set-Cookie"]
 }));
 
 // For preflight requests
 app.options('*', cors());
 
+// 🔥 DATABASE CONNECTION WITH ERROR HANDLING
 const connectToDb = require("./db/db.js");
-connectToDb();
+connectToDb().catch(err => {
+    console.error("❌ Database connection failed:", err);
+    process.exit(1);
+});
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -41,8 +50,10 @@ const server = http.createServer(app);
 
 const io = require("socket.io")(server, {
   cors: {
-    origin: "https://uber-1-0tlr.onrender.com",
-    // origin: "*",
+    origin: [
+        "https://uber-1-0tlr.onrender.com",
+        "http://localhost:5173"
+    ],
     methods: ["GET", "POST", "OPTIONS"],
     credentials: true,
   },
@@ -154,7 +165,6 @@ socket.on("ride_accept", ({ rideRequest, driverId, driverName, vehiclePlate, veh
   }
 });
 
-
   // Driver rejects a ride
   socket.on("ride_reject", ({ rideRequest }) => {
     console.log(`❌ RIDE REJECT: Driver ${socket.id} rejected ride:`, rideRequest);
@@ -195,8 +205,22 @@ socket.on("ride_accept", ({ rideRequest, driverId, driverName, vehiclePlate, veh
   });
 });
 
+// 🔥 HEALTH CHECK ENDPOINT
 app.get("/", (req, res) => {
-  res.send("Uber Clone Backend is running.");
+  res.json({
+    message: "Uber Clone Backend is running.",
+    environment: process.env.NODE_ENV,
+    timestamp: new Date().toISOString()
+  });
 });
 
-module.exports = { app, server };
+// 🔥 DATABASE STATUS ENDPOINT
+app.get("/health", (req, res) => {
+  res.json({
+    status: "OK",
+    database: "Connected",
+    environment: process.env.NODE_ENV
+  });
+});
+
+module.exports = server;

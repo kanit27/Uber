@@ -17,7 +17,6 @@ module.exports.registerUser = async (req, res, next) => {
       return res.status(400).json({ message: "Email already Exists" });
     }
 
-    // 🔹 Create user (password is hashed automatically in the model)
     const user = await userService.createUser({
       firstname: fullname.firstname,
       lastname: fullname.lastname,
@@ -25,15 +24,25 @@ module.exports.registerUser = async (req, res, next) => {
       password,
     });
 
-    // 🔹 Generate auth token
     const token = user.generateAuthToken();
+    
+    // 🔥 PRODUCTION COOKIE FIX
+    const isProduction = process.env.NODE_ENV === 'production';
+    
     res.cookie("token", token, {
       httpOnly: true,
-      secure: true,
-      sameSite: "none",
+      secure: isProduction, // Only secure in production (HTTPS)
+      sameSite: isProduction ? "none" : "lax", // "none" only in production
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours
+      domain: isProduction ? undefined : "localhost" // Let browser handle domain in production
     });
 
-    res.status(201).json({ user, token });
+    // 🔥 SEND TOKEN IN RESPONSE for localStorage fallback
+    res.status(201).json({ 
+      user, 
+      token, // ✅ Include token in response
+      message: "User registered successfully" 
+    });
   } catch (error) {
     next(error);
   }
@@ -48,36 +57,40 @@ module.exports.loginUser = async (req, res, next) => {
 
     const { email, password } = req.body;
 
-    // 🔹 Find user by email
     const user = await userModel.findOne({ email }).select("+password");
 
     if (!user) {
       return res.status(401).json({ message: "Invalid email or password" });
     }
 
-    // 🔹 Compare password
     const isMatch = await user.comparePassword(password);
 
     if (!isMatch) {
       return res.status(401).json({ message: "Invalid email or password" });
     }
 
-    // 🔹 Generate auth token
     const token = user.generateAuthToken();
+    
+    // 🔥 PRODUCTION COOKIE FIX
+    const isProduction = process.env.NODE_ENV === 'production';
+    
     res.cookie("token", token, {
       httpOnly: true,
-      secure: true,
-      sameSite: "none",
+      secure: isProduction,
+      sameSite: isProduction ? "none" : "lax",
+      maxAge: 24 * 60 * 60 * 1000,
+      domain: isProduction ? undefined : "localhost"
     });
 
-    res.status(200).json({ user, token });
+    // 🔥 SEND TOKEN IN RESPONSE for localStorage fallback
+    res.status(200).json({ 
+      user, 
+      token, // ✅ Include token in response
+      message: "Login successful" 
+    });
   } catch (error) {
     next(error);
   }
-};
-
-module.exports.getUserProfile = async (req, res, next) => {
-  res.status(200).json(req.user);
 };
 
 module.exports.logoutUser = async (req, res) => {
@@ -87,7 +100,6 @@ module.exports.logoutUser = async (req, res) => {
       return res.status(400).json({ message: "No token provided" });
     }
 
-    // Decode token to get user ID
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const user = await userModel.findById(decoded._id);
 
@@ -95,25 +107,24 @@ module.exports.logoutUser = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    console.log("Before Logout:", user);
-
-    // Blacklist the token
     await BlackListToken.create({ token });
 
-    // Remove token from user model
     user.token = null;
     await user.save();
 
-    console.log("After Logout:", await userModel.findById(decoded._id));
-
-    // Clear cookie
-    res.clearCookie("token", { httpOnly: true, secure: true });
+    // 🔥 CLEAR COOKIE with same options as set
+    const isProduction = process.env.NODE_ENV === 'production';
+    
+    res.clearCookie("token", {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: isProduction ? "none" : "lax",
+      domain: isProduction ? undefined : "localhost"
+    });
 
     return res.status(200).json({ message: "Logged out successfully" });
   } catch (error) {
     console.error("Logout Error:", error);
-    return res
-      .status(500)
-      .json({ message: "Server error", error: error.message });
+    return res.status(500).json({ message: "Server error", error: error.message });
   }
 };
