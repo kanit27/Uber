@@ -28,17 +28,17 @@ const App = () => {
         <Route
           path="/home"
           element={
-            <UserProtectedWrapper>
             <Home />
-            </UserProtectedWrapper>
+            // <UserProtectedWrapper>
+            // </UserProtectedWrapper>
           }
         />
         <Route
           path="/caption-home"
           element={
-            <CaptionProtectedWrapper>
             <CaptionHome />
-            </CaptionProtectedWrapper>
+            // <CaptionProtectedWrapper>
+            // </CaptionProtectedWrapper>
           }
         />
         {/* <Route
@@ -53,9 +53,9 @@ const App = () => {
           <CaptionProfile />
         } />
         <Route path="/user-profile" element={
-          <UserProtectedWrapper>
           <UserProfile />
-          </UserProtectedWrapper>
+          // <UserProtectedWrapper>
+          // </UserProtectedWrapper>
         } />
       </Routes>
     </div>
