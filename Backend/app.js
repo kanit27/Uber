@@ -9,7 +9,8 @@ const cors = require("cors");
 // 🔥 FIXED CORS CONFIGURATION
 app.use(cors({
     origin: [
-        "https://uber-1-0tlr.onrender.com",     
+        // "https://uber-1-0tlr.onrender.com", 
+        "https://airy-reverence-production.up.railway.app",    
         "http://localhost:5173"         
     ],
     credentials: true,
@@ -51,7 +52,8 @@ const server = http.createServer(app);
 const io = require("socket.io")(server, {
   cors: {
     origin: [
-        "https://uber-1-0tlr.onrender.com",
+        // "https://uber-1-0tlr.onrender.com",
+        "https://airy-reverence-production.up.railway.app",
         "http://localhost:5173"
     ],
     methods: ["GET", "POST", "OPTIONS"],
