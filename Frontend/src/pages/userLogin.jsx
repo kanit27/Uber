@@ -136,6 +136,9 @@ const UserLogin = () => {
       </div>
       
       <div className="absolute bottom-10 right-10 text-center mt-5">
+        <Link  to="/shop-login" className="bg-green-500 px-4 py-2 mr-2 text-white rounded-lg">
+        Shop Login
+        </Link>
         <Link to="/caption-login" className="bg-blue-500 px-4 py-2 text-white rounded-lg">
           Caption Login
         </Link>

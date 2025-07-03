@@ -3,6 +3,7 @@ dotenv.config();
 
 const express = require("express");
 const app = express();
+const mongoose = require("mongoose");
 
 const cors = require("cors");
 
@@ -40,11 +41,11 @@ app.use(express.static(path.join(__dirname, "public")));
 
 const userRoutes = require("./routes/user.routes");
 const captionRoutes = require("./routes/caption.routes");
-const mapRoutes = require("./routes/map.routes");
+const shopRoutes = require("./routes/shop.routes");
 
 app.use("/users", userRoutes);
 app.use("/caption", captionRoutes);
-app.use("/map", mapRoutes);
+app.use("/shops", shopRoutes);
 
 const http = require('http');
 const server = http.createServer(app);
@@ -64,6 +65,7 @@ const io = require("socket.io")(server, {
 // Store user data with more details
 const riders = {};   // { socketId: { location: [lat, lng] } }
 const drivers = {};  // { socketId: { location: [lat, lng], driverId: string } }
+const shops = {};    // { shopId: { location: [lat, lng], isOpen: boolean } }
 
 // --- HELPER FUNCTIONS for broadcasting updates ---
 const broadcastDriversUpdate = () => {
@@ -78,6 +80,13 @@ const broadcastRidersUpdate = () => {
     console.log(`Broadcasted ${riderLocations.length} riders to all drivers.`);
 };
 
+// --- NEW: Broadcast shop updates to all riders ---
+const broadcastShopUpdate = () => {
+    // Send all shops (could be just one in your case)
+    io.to('riders_room').emit("shop_location_update", Object.values(shops));
+    console.log(`Broadcasted ${Object.keys(shops).length} shops to all riders.`);
+};
+
 io.on("connection", (socket) => {
   console.log("New connection:", socket.id);
 
@@ -90,7 +99,10 @@ io.on("connection", (socket) => {
     // Send current drivers list to the new rider
     const driverLocations = Object.values(drivers).map(driver => driver.location);
     socket.emit("drivers_update", driverLocations);
-    
+
+    // --- Send current shop(s) to the new rider ---
+    socket.emit("shop_location_update", Object.values(shops));
+
     // Notify all drivers about the new/updated rider list
     broadcastRidersUpdate();
   });
@@ -184,6 +196,18 @@ socket.on("ride_accept", ({ rideRequest, driverId, driverName, vehiclePlate, veh
     }
   });
 
+  // --- SHOP LOGIC ---
+  socket.on("shop_location_update", (data) => {
+    // data: { shopId, location: [lat, lng], isOpen }
+    if (!data || !data.shopId) return;
+    shops[data.shopId] = {
+      location: data.location,
+      isOpen: data.isOpen,
+      shopId: data.shopId,
+    };
+    broadcastShopUpdate();
+  });
+
   // DISCONNECT HANDLERS ==========================
   socket.on("disconnect", () => {
     console.log(`🔌 Socket ${socket.id} disconnected`);
@@ -224,5 +248,8 @@ app.get("/health", (req, res) => {
     environment: process.env.NODE_ENV
   });
 });
+
+
+
 
 module.exports = server;

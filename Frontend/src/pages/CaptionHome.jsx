@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
-import Maps from "../components/Maps";
 import socket from "../socket";
 import { GoCheck } from "react-icons/go";
 import { RxCross2 } from "react-icons/rx";
 import CaptionHeader from "../components/CaptionHeader";
 import { GrLocation, GrLocationPin } from "react-icons/gr";
+import DriverMap from "../components/DriverMap";
 
 const CaptionHome = () => {
   const [routeCoords, setRouteCoords] = useState([]);
@@ -101,7 +101,7 @@ const handleAccept = () => {
   return (
     <div className="h-screen w-screen overflow-hidden relative">
       <CaptionHeader />
-      <Maps
+      <DriverMap
         selfLocation={location}
         otherMarkers={riderLocations}
         routeCoords={routeCoords}

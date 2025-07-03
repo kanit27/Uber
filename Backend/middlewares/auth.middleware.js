@@ -71,3 +71,41 @@ module.exports.authCaption = async (req, res, next) => {
         return res.status(401).json({ message: 'Unauthorized' });
     }
 };
+
+module.exports.authShop = async (req, res, next) => {
+    try {
+        const token = req.cookies.shopToken || req.headers.authorization?.split(' ')[1];
+        
+        if (!token) {
+            return res.status(401).json({ message: 'Unauthorized - No token provided' });
+        }
+
+        const isBlacklisted = await BlackListToken.findOne({ token });
+        if (isBlacklisted) {
+            return res.status(401).json({ message: 'Unauthorized - Token blacklisted' });
+        }
+
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        
+        // Check if token is for shop role
+        if (decoded.role !== 'shop') {
+            return res.status(401).json({ message: 'Unauthorized - Invalid role' });
+        }
+
+        const shop = await shopModel.findById(decoded._id);
+
+        if (!shop) {
+            return res.status(401).json({ message: 'Unauthorized - Shop not found' });
+        }
+
+        if (shop.status !== 'active') {
+            return res.status(401).json({ message: 'Unauthorized - Shop account suspended' });
+        }
+
+        req.shop = shop;
+        next();
+    } catch (error) {
+        console.error('Shop Auth Error:', error);
+        return res.status(401).json({ message: 'Unauthorized - Invalid token' });
+    }
+};

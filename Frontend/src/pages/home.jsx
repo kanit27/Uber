@@ -1,4 +1,4 @@
-import Maps from "../components/Maps";
+import RiderMap from "../components/RiderMap";
 import WhereTo from "../components/WhereTo";
 import { useEffect, useState, useRef } from "react";
 import socket from "../socket"; // import socket
@@ -7,8 +7,9 @@ import { AiOutlineSafety } from "react-icons/ai";
 import { IoCallOutline } from "react-icons/io5";
 import { TiMessage } from "react-icons/ti";
 import { MdOutlineEmergencyShare, MdStarRate } from "react-icons/md";
-import { useGSAP } from "@gsap/react"; 
+import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
+import { useNavigate } from "react-router-dom";
 
 const Home = ({ setRidesOpen }) => {
   const [routeCoords, setRouteCoords] = useState([]);
@@ -17,41 +18,44 @@ const Home = ({ setRidesOpen }) => {
   const [isRegistered, setIsRegistered] = useState(false);
   const [driverInfo, setDriverInfo] = useState(null);
   const [rideAccepted, setRideAccepted] = useState(false);
+  const [isOpen, setIsOpen] = useState(true);
+  const [shopLocation, setShopLocation] = useState(null);
+  const [shopId, setShopId] = useState(null); // Add this if you want to store shopId
+  const [shops, setShops] = useState([]);
   const driverRef = useRef(null);
   const driverCloseRef = useRef(null);
+  const navigate = useNavigate();
 
-
-    useGSAP(
-      function () {
-        if (rideAccepted) {
-          gsap.to(driverRef.current, {
-            duration: 0.5,
-            y: "-40%",
-            ease: "power2.out",
-          });
-          gsap.to(driverCloseRef.current, {
-            duration: 0.5,
-            y: "0%",
-            opacity: 1,
-            ease: "power2.out",
-          });
-        } else {
-          gsap.to(driverRef.current, {
-            duration: 0.5,
-            y: "0%",
-            ease: "power2.out",
-          });
-          gsap.to(driverCloseRef.current, {
-            duration: 0.5,
-            y: "-40%",
-            opacity: 0,
-            ease: "power2.out",
-          });
-        }
-      },
-      [rideAccepted]
-    );
-
+  useGSAP(
+    function () {
+      if (rideAccepted) {
+        gsap.to(driverRef.current, {
+          duration: 0.5,
+          y: "-40%",
+          ease: "power2.out",
+        });
+        gsap.to(driverCloseRef.current, {
+          duration: 0.5,
+          y: "0%",
+          opacity: 1,
+          ease: "power2.out",
+        });
+      } else {
+        gsap.to(driverRef.current, {
+          duration: 0.5,
+          y: "0%",
+          ease: "power2.out",
+        });
+        gsap.to(driverCloseRef.current, {
+          duration: 0.5,
+          y: "-40%",
+          opacity: 0,
+          ease: "power2.out",
+        });
+      }
+    },
+    [rideAccepted]
+  );
 
   useEffect(() => {
     const watchId = navigator.geolocation.watchPosition(
@@ -89,31 +93,78 @@ const Home = ({ setRidesOpen }) => {
       console.log("Ride accepted by driver:", data);
     });
 
+    // Listen for shop location/status updates
+    socket.on("shop_location_update", () => {
+  fetch(`${import.meta.env.VITE_BASE_URL}/shops`)
+    .then((res) => res.json())
+    .then((data) => {
+      if (data.success) setShops(data.shops);
+    });
+});
+
     // Cleanup function
     return () => {
       navigator.geolocation.clearWatch(watchId);
       socket.off("drivers_update");
       socket.off("ride_accepted");
+      socket.off("shop_location_update");
       // Optionally emit a disconnect event
       socket.emit("rider_disconnect");
     };
   }, [isRegistered]);
 
+  useEffect(() => {
+    fetch(`${import.meta.env.VITE_BASE_URL}/shops`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success) setShops(data.shops);
+      });
+  }, []);
+
+  // Handler for shop marker click
+  // const handleShopMarkerClick = (shopMarker) => {
+  //   if (shopMarker.isOpen) {
+  //     // Navigate to shop page
+  //     navigate(`/shop/${shopMarker.shop._id}`);
+  //   } else {
+  //     alert("Shop is closed");
+  //   }
+  // };
+
+  const handleShopMarkerClick = (shopMarker) => {
+  if (shopMarker.shop && shopMarker.shop._id) {
+    navigate(`/shop/${shopMarker.shop._id}`);
+  } else {
+    alert("Shop not found");
+  }
+};
+
   return (
     <div className="h-screen w-screen overflow-hidden relative">
       <UserHeader />
-      <Maps
+      <RiderMap
         selfLocation={location}
         otherMarkers={drivers}
         routeCoords={routeCoords}
         isRider={true}
+        shopMarkers={shops.map((shop) => ({
+          location: shop.location,
+          isOpen: shop.isOpen,
+          shop, // pass the whole shop object
+        }))}
+        onShopMarkerClick={handleShopMarkerClick}
       />
-      <WhereTo setRouteCoords={setRouteCoords} driverInfo={driverInfo} rideAccepted={rideAccepted} />
+      <WhereTo
+        setRouteCoords={setRouteCoords}
+        driverInfo={driverInfo}
+        rideAccepted={rideAccepted}
+      />
 
       {driverInfo && rideAccepted && (
         <div
-        ref={driverRef}
-        className="w-full absolute z-[99999999] -bottom-40 h-[40vh] py-4 rounded-t-2xl bg-white">
+          ref={driverRef}
+          className="w-full absolute z-[99999999] -bottom-40 h-[40vh] py-4 rounded-t-2xl bg-white"
+        >
           <div className="w-full px-6 flex justify-between items-center">
             <div className="flex flex-col mt-2 mb-1 leading-none">
               <h1 className="text-black font-semibold text-[25px] truncate">
@@ -140,16 +191,18 @@ const Home = ({ setRidesOpen }) => {
               />
             </div>
             <div className="flex flex-col leading-none">
-              <h1 className="text-2xl font-semibold capitalize">{driverInfo.name}</h1>
+              <h1 className="text-2xl font-semibold capitalize">
+                {driverInfo.name}
+              </h1>
               <div className="flex flex-row gap-1 items-center ">
-                  <div className="pb-0.5 ">
-                    <MdStarRate className="text-sm" />
-                  </div>
-                  <span className="text-md ">5.0</span>
+                <div className="pb-0.5 ">
+                  <MdStarRate className="text-sm" />
                 </div>
+                <span className="text-md ">5.0</span>
+              </div>
             </div>
           </div>
-          
+
           <div className="w-full flex flex-row justify-between px-4 items-center mt-4 ">
             <div>
               <img
@@ -171,7 +224,7 @@ const Home = ({ setRidesOpen }) => {
               </h2> */}
             </div>
           </div>
-          
+
           <div className="w-full flex flex-row justify-between items-center  mt-8 px-4">
             <div className="w-1/4 flex flex-col items-center">
               <AiOutlineSafety className="w-10 h-10 bg-neutral-200 text-black p-2 rounded-xl" />
@@ -204,7 +257,9 @@ const Home = ({ setRidesOpen }) => {
 
 function errorCallback(error) {
   if (error.code === 3) {
-    alert("Location request timed out. Please try again or check your device settings.");
+    alert(
+      "Location request timed out. Please try again or check your device settings."
+    );
   } else {
     alert("Location error: " + error.message);
   }
