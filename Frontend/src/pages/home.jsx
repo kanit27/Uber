@@ -95,12 +95,12 @@ const Home = ({ setRidesOpen }) => {
 
     // Listen for shop location/status updates
     socket.on("shop_location_update", () => {
-  fetch(`${import.meta.env.VITE_BASE_URL}/shops`)
-    .then((res) => res.json())
-    .then((data) => {
-      if (data.success) setShops(data.shops);
+      fetch(`${import.meta.env.VITE_BASE_URL}/shops`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.success) setShops(data.shops);
+        });
     });
-});
 
     // Cleanup function
     return () => {
@@ -132,12 +132,12 @@ const Home = ({ setRidesOpen }) => {
   // };
 
   const handleShopMarkerClick = (shopMarker) => {
-  if (shopMarker.shop && shopMarker.shop._id) {
-    navigate(`/shop/${shopMarker.shop._id}`);
-  } else {
-    alert("Shop not found");
-  }
-};
+    if (shopMarker.shop && shopMarker.shop._id) {
+      navigate(`/shop/${shopMarker.shop._id}`);
+    } else {
+      alert("Shop not found");
+    }
+  };
 
   return (
     <div className="h-screen w-screen overflow-hidden relative">

@@ -42,10 +42,14 @@ app.use(express.static(path.join(__dirname, "public")));
 const userRoutes = require("./routes/user.routes");
 const captionRoutes = require("./routes/caption.routes");
 const shopRoutes = require("./routes/shop.routes");
+const cartRoutes = require("./routes/cart.routes");
+const orderRoutes = require("./routes/order.routes");
 
 app.use("/users", userRoutes);
 app.use("/caption", captionRoutes);
 app.use("/shops", shopRoutes);
+app.use("/cart", cartRoutes);
+app.use("/orders", orderRoutes);
 
 const http = require('http');
 const server = http.createServer(app);
@@ -87,8 +91,19 @@ const broadcastShopUpdate = () => {
     console.log(`Broadcasted ${Object.keys(shops).length} shops to all riders.`);
 };
 
+app.set("io", io);
+
 io.on("connection", (socket) => {
   console.log("New connection:", socket.id);
+
+  // 🔥 AUTO‐JOIN SHOP ROOM (so you can emit new orders directly to it)
+  //    If your front end passes ?shopId=… in the socket‐io handshake URL
+  //    e.g. io(SERVER_URL, { query: { shopId: "123" } })
+  const { shopId } = socket.handshake.query || {};
+  if (shopId) {
+    socket.join(`shop_${shopId}`);
+    console.log(`Shop socket ${socket.id} joined room shop_${shopId}`);
+  }
 
   // R I D E R  LOGIC ==========================
   socket.on("register_rider", (location) => {
@@ -208,6 +223,14 @@ socket.on("ride_accept", ({ rideRequest, driverId, driverName, vehiclePlate, veh
     broadcastShopUpdate();
   });
 
+  // --- SHOP REALTIME: Join shop room for order notifications ---
+  socket.on("join_shop", (shopId) => {
+    if (shopId) {
+      socket.join(`shop_${shopId}`);
+      console.log(`Shop socket ${socket.id} joined room shop_${shopId}`);
+    }
+  });
+
   // DISCONNECT HANDLERS ==========================
   socket.on("disconnect", () => {
     console.log(`🔌 Socket ${socket.id} disconnected`);
@@ -248,7 +271,6 @@ app.get("/health", (req, res) => {
     environment: process.env.NODE_ENV
   });
 });
-
 
 
 

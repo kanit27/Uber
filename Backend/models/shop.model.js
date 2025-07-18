@@ -3,8 +3,8 @@ const mongoose = require('mongoose');
 const productSchema = new mongoose.Schema({
   name: { type: String, required: true },
   icon: String,
-  price: Number,
-  stock: Number,
+  price: { type: Number, required: true },
+  stock: { type: Number, required: true },
   isAvailable: { type: Boolean, default: true }
 });
 
@@ -18,7 +18,8 @@ const shopSchema = new mongoose.Schema({
   password: { type: String, required: true, select: false },
   location: { type: [Number], required: true }, // [lat, lng]
   isOpen: { type: Boolean, default: false },
-  products: [productSchema]
+  products: [productSchema],
+  orders: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Order' }]
 });
 
 module.exports = mongoose.model('Shop', shopSchema);

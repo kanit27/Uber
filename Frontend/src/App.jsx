@@ -19,6 +19,8 @@ import ShopHome from "./pages/ShopHome";
 import ShopContext from "./context/ShopContext";
 import ShopView from "./pages/ShopView";
 import ShopProtectedWrapper from "./pages/ShopProtectedWrapper";
+import OrderSuccess from "./pages/OrderSuccess";
+import OrderHistory from "./pages/OrderHistory";
 
 const App = () => {
   return (
@@ -79,6 +81,8 @@ const App = () => {
         <ShopView />
     </ShopProtectedWrapper>
           } />
+          <Route path="/order-success" element={<OrderSuccess />} />
+          <Route path="/orders" element={<OrderHistory />} />
       </Routes>
     </div>
   );

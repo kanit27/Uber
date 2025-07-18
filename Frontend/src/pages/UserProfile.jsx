@@ -6,6 +6,7 @@ import axios from "axios";
 const UserProfile = () => {
   const [user, setUser] = useState(null);
   const [loggingOut, setLoggingOut] = useState(false);
+  const [orders, setOrders] = useState([]);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -14,6 +15,20 @@ const UserProfile = () => {
     if (stored) {
       setUser(JSON.parse(stored));
     }
+  }, []);
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    axios.get(`${import.meta.env.VITE_BASE_URL}/orders/history`, {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+      .then((res) => {
+        setOrders(res.data.orders || []);
+      })
+      .catch(err => {
+        setOrders([]);
+        console.error("Failed to load orders", err);
+      });
   }, []);
 
   const handleLogout = async () => {
@@ -60,9 +75,15 @@ const UserProfile = () => {
         {user.email}
       </div>
       <button
+        onClick={() => navigate("/orders")}
+        className="mb-4 w-full h-10 bg-blue-600 text-white rounded-md font-semibold hover:bg-blue-700 transition"
+      >
+        View Order History
+      </button>
+      <button
         onClick={handleLogout}
         disabled={loggingOut}
-        className="mt-8 w-full h-10 bg-red-600 text-white rounded-md font-semibold hover:bg-red-700 transition"
+        className="mt-2 w-full h-10 bg-red-600 text-white rounded-md font-semibold hover:bg-red-700 transition"
       >
         {loggingOut ? "Logging out..." : "Logout"}
       </button>
