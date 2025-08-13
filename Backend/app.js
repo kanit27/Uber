@@ -10,9 +10,7 @@ const cors = require("cors");
 // 🔥 FIXED CORS CONFIGURATION
 app.use(cors({
     origin: [
-        // "https://uber-1-0tlr.onrender.com", 
-        "https://ideal-integrity-production.up.railway.app",    
-        "http://localhost:5173"         
+        "https://uber-1-0tlr.onrender.com"
     ],
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
@@ -57,9 +55,7 @@ const server = http.createServer(app);
 const io = require("socket.io")(server, {
   cors: {
     origin: [
-        // "https://uber-1-0tlr.onrender.com",
-        "https://ideal-integrity-production.up.railway.app",
-        "http://localhost:5173"
+        "https://uber-1-0tlr.onrender.com"
     ],
     methods: ["GET", "POST", "OPTIONS"],
     credentials: true,
