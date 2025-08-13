@@ -11,7 +11,8 @@ const cors = require("cors");
 app.use(cors({
     origin: [
         "https://uber-ruby-beta.vercel.app",
-        "uber-hulxzdeep-kanits-projects.vercel.app"
+        "uber-hulxzdeep-kanits-projects.vercel.app",
+        "http://localhost:5173"
     ],
     credentials: true,
      timeout: 30000,
@@ -58,7 +59,8 @@ const io = require("socket.io")(server, {
   cors: {
     origin: [
         "https://uber-ruby-beta.vercel.app",
-        "uber-hulxzdeep-kanits-projects.vercel.app"
+        "uber-hulxzdeep-kanits-projects.vercel.app",
+        "http://localhost:5173"
     ],
        timeout: 30000,
     methods: ["GET", "POST", "OPTIONS"],
