@@ -13,6 +13,7 @@ app.use(cors({
         "https://uber-ruby-beta.vercel.app"
     ],
     credentials: true,
+     timeout: 30000,
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization", "Cookie"],
     exposedHeaders: ["Set-Cookie"]
@@ -57,6 +58,7 @@ const io = require("socket.io")(server, {
     origin: [
         "https://uber-ruby-beta.vercel.app"
     ],
+       timeout: 30000,
     methods: ["GET", "POST", "OPTIONS"],
     credentials: true,
   },
