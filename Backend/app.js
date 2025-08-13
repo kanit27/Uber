@@ -11,7 +11,7 @@ const cors = require("cors");
 app.use(cors({
     origin: [
         // "https://uber-1-0tlr.onrender.com", 
-        "https://uber-production-4170.up.railway.app",    
+        "https://ideal-integrity-production.up.railway.app",    
         "http://localhost:5173"         
     ],
     credentials: true,
