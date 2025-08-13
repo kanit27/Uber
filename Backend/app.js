@@ -10,7 +10,8 @@ const cors = require("cors");
 // 🔥 FIXED CORS CONFIGURATION
 app.use(cors({
     origin: [
-        "https://uber-ruby-beta.vercel.app"
+        "https://uber-ruby-beta.vercel.app",
+        "uber-hulxzdeep-kanits-projects.vercel.app"
     ],
     credentials: true,
      timeout: 30000,
@@ -56,7 +57,8 @@ const server = http.createServer(app);
 const io = require("socket.io")(server, {
   cors: {
     origin: [
-        "https://uber-ruby-beta.vercel.app"
+        "https://uber-ruby-beta.vercel.app",
+        "uber-hulxzdeep-kanits-projects.vercel.app"
     ],
        timeout: 30000,
     methods: ["GET", "POST", "OPTIONS"],
