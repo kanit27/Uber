@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build && echo '/* /index.html 200' > dist/_redirects",
+     "start": "serve -s dist",
     "lint": "eslint .",
     "preview": "vite preview"
   },
@@ -21,6 +22,7 @@
     "react-icons": "^5.5.0",
     "react-leaflet": "^5.0.0",
     "react-router-dom": "^7.6.2",
+    "serve": "^14.2.4",
     "socket.io-client": "^4.8.1"
   },
   "devDependencies": {
