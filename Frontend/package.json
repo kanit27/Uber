@@ -6,7 +6,6 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build && echo '/* /index.html 200' > dist/_redirects",
-     "preview": "vite preview"
     "lint": "eslint .",
     "preview": "vite preview"
   },
