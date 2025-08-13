@@ -1,7 +1,7 @@
-const userModel = require("../../../Uber/Backend/models/user.model");
-const userService = require("../../../Uber/Backend/services/user.service");
+const userModel = require("../models/user.model");
+const userService = require("../services/user.service");
 const { validationResult } = require("express-validator");
-const BlackListToken = require("../../../Uber/Backend/models/blackListToken.model");
+const BlackListToken = require("../models/blackListToken.model");
 const jwt = require("jsonwebtoken");
 
 module.exports.registerUser = async (req, res, next) => {
